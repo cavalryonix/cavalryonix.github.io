@@ -34,6 +34,7 @@
       width: 60%;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      text-align: left;
     }
 
     iframe {
@@ -43,45 +44,112 @@
 </head>
 <body>
 
-  <h1>🎧 XC Songfess</h1>
+  <h1>🎧 CAVALRYONIX Songfess</h1>
 
+  <input type="text" id="sender" placeholder="From (boleh anonim)">
+  <br>
+  <input type="text" id="receiver" placeholder="To (untuk siapa?)">
+  <br>
   <input type="text" id="song" placeholder="Paste Spotify song link...">
   <br>
-  <textarea id="message" rows="4" placeholder="Write your anonymous message..."></textarea>
+  <textarea id="message" rows="4" placeholder="Write your message..."></textarea>
   <br>
   <button onclick="addSongfess()">Send</button>
 
   <div id="result"></div>
 
-  <script>
-    function addSongfess() {
+  <script type="module">
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      getDocs,
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBmWJdT-sumJWd1fKPWvattWKGp9VPFuyk",
+      authDomain: "xcavalryonix.firebaseapp.com",
+      projectId: "xcavalryonix",
+      storageBucket: "xcavalryonix.firebasestorage.app",
+      messagingSenderId: "496785985793",
+      appId: "1:496785985793:web:56eff97ed61a5c91664b00"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const result = document.getElementById("result");
+
+    async function loadSongfess() {
+      result.innerHTML = "";
+
+      const querySnapshot = await getDocs(collection(db, "songfess"));
+
+      querySnapshot.forEach((doc) => {
+        const item = doc.data();
+
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const embedLink = item.song.replace("track/", "embed/track/");
+
+        let waktuFormatted = "";
+        if (item.waktu) {
+          const date = item.waktu.toDate();
+          waktuFormatted = date.toLocaleString("id-ID");
+        }
+
+        card.innerHTML = `
+          <strong>From:</strong> ${item.sender || "Anonim"}<br>
+          <strong>To:</strong> ${item.receiver}<br>
+          <small>${waktuFormatted}</small><br><br>
+          <iframe src="${embedLink}" 
+          width="100%" height="80" 
+          frameborder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+          </iframe>
+          <p>${item.message}</p>
+        `;
+
+        result.appendChild(card);
+      });
+    }
+
+    window.addSongfess = async function() {
+
+      var sender = document.getElementById("sender").value;
+      var receiver = document.getElementById("receiver").value;
       var song = document.getElementById("song").value;
       var message = document.getElementById("message").value;
 
-      if(song === "" || message === "") {
-        alert("Isi dulu yaa 😠");
+      if(receiver === "" || song === "" || message === "") {
+        alert("Isi dulu yang lengkap yaa 😠");
         return;
       }
 
-      var embedLink = song.replace("track/", "embed/track/");
+      await addDoc(collection(db, "songfess"), {
+        sender,
+        receiver,
+        song,
+        message,
+        waktu: serverTimestamp()
+      });
 
-      var card = document.createElement("div");
-      card.className = "card";
+      alert("Berhasil dikirim 💌");
 
-      card.innerHTML = `
-        <iframe src="${embedLink}" 
-        width="100%" height="80" 
-        frameborder="0" 
-        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
-        </iframe>
-        <p>${message}</p>
-      `;
-
-      document.getElementById("result").appendChild(card);
-
+      document.getElementById("sender").value = "";
+      document.getElementById("receiver").value = "";
       document.getElementById("song").value = "";
       document.getElementById("message").value = "";
-    }
+
+      loadSongfess();
+    };
+
+    loadSongfess();
+
   </script>
 
 </body>
