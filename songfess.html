@@ -10,8 +10,11 @@ import {
   query,
   orderBy,
   doc,
-  updateDoc
+  updateDoc,
+  getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+document.addEventListener("DOMContentLoaded", () => {
 
 const firebaseConfig = {
   apiKey: "AIzaSyBmWJdT-sumJWd1fKPWvattWKGp9VPFuyk",
@@ -27,13 +30,15 @@ const db = getFirestore(app);
 const result = document.getElementById("result");
 
 async function loadSongfess() {
+  if (!result) return;
+
   result.innerHTML = "";
 
   const q = query(collection(db, "songfess"), orderBy("waktu", "desc"));
   const snapshot = await getDocs(q);
 
-  snapshot.forEach((document) => {
-    const item = document.data();
+  snapshot.forEach((documentData) => {
+    const item = documentData.data();
 
     const card = document.createElement("div");
     card.className = "card";
@@ -58,13 +63,36 @@ async function loadSongfess() {
 
       <p>${item.message}</p>
 
-      <button onclick="likePost('${document.id}')">
+      <button data-id="${documentData.id}" class="like-btn">
         ❤️ ${item.likes || 0}
       </button>
     `;
 
     result.appendChild(card);
   });
+
+  // attach event listener after render
+  document.querySelectorAll(".like-btn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+      const id = btn.getAttribute("data-id");
+      await likePost(id);
+    });
+  });
+}
+
+async function likePost(id) {
+  const postRef = doc(db, "songfess", id);
+  const snap = await getDoc(postRef);
+
+  if (!snap.exists()) return;
+
+  const currentLikes = snap.data().likes || 0;
+
+  await updateDoc(postRef, {
+    likes: currentLikes + 1
+  });
+
+  loadSongfess();
 }
 
 window.addSongfess = async function() {
@@ -98,20 +126,7 @@ window.addSongfess = async function() {
   loadSongfess();
 };
 
-window.likePost = async function(id) {
-
-  const postRef = doc(db, "songfess", id);
-  const snapshot = await getDocs(collection(db, "songfess"));
-  const post = snapshot.docs.find(d => d.id === id);
-  const currentLikes = post.data().likes || 0;
-
-  await updateDoc(postRef, {
-    likes: currentLikes + 1
-  });
-
-  loadSongfess();
-};
-
 loadSongfess();
 
+});
 </script>
