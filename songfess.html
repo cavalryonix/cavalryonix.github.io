@@ -44,7 +44,7 @@
 </head>
 <body>
 
-  <h1>🎧 CAVALRYONIX Songfess</h1>
+  <h1>🎧 CAVALRYONIX SONGFESS</h1>
 
   <input type="text" id="sender" placeholder="From (boleh anonim)">
   <br>
@@ -64,7 +64,134 @@
     import { 
       getFirestore, 
       collection, 
-      addDoc, 
+     await addDoc(collection(db, "songfess"), {
+  sender,
+  receiver,
+  song,
+  message,<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  getDocs,
+  serverTimestamp,
+  query,
+  orderBy,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBmWJdT-sumJWd1fKPWvattWKGp9VPFuyk",
+  authDomain: "xcavalryonix.firebaseapp.com",
+  projectId: "xcavalryonix",
+  storageBucket: "xcavalryonix.firebasestorage.app",
+  messagingSenderId: "496785985793",
+  appId: "1:496785985793:web:56eff97ed61a5c91664b00"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const result = document.getElementById("result");
+
+async function loadSongfess() {
+  result.innerHTML = "";
+
+  const q = query(collection(db, "songfess"), orderBy("waktu", "desc"));
+  const querySnapshot = await getDocs(q);
+
+  querySnapshot.forEach((document) => {
+    const item = document.data();
+
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const embedLink = item.song.replace("track/", "embed/track/");
+
+    let waktuFormatted = "";
+    if (item.waktu) {
+      const date = item.waktu.toDate();
+      waktuFormatted = date.toLocaleString("id-ID");
+    }
+
+    card.innerHTML = `
+      <strong>From:</strong> ${item.sender || "Anonim"}<br>
+      <strong>To:</strong> ${item.receiver}<br>
+      <small>${waktuFormatted}</small><br><br>
+
+      <iframe src="${embedLink}" 
+      width="100%" height="80" 
+      frameborder="0"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
+      </iframe>
+
+      <p>${item.message}</p>
+
+      <button onclick="likePost('${document.id}')">
+        ❤️ ${item.likes || 0}
+      </button>
+    `;
+
+    result.appendChild(card);
+  });
+}
+
+window.addSongfess = async function() {
+
+  var sender = document.getElementById("sender").value;
+  var receiver = document.getElementById("receiver").value;
+  var song = document.getElementById("song").value;
+  var message = document.getElementById("message").value;
+
+  if(receiver === "" || song === "" || message === "") {
+    alert("Isi dulu yang lengkap yaa 😠");
+    return;
+  }
+
+  await addDoc(collection(db, "songfess"), {
+    sender,
+    receiver,
+    song,
+    message,
+    waktu: serverTimestamp(),
+    likes: 0
+  });
+
+  alert("Berhasil dikirim 💌");
+
+  document.getElementById("sender").value = "";
+  document.getElementById("receiver").value = "";
+  document.getElementById("song").value = "";
+  document.getElementById("message").value = "";
+
+  loadSongfess();
+};
+
+window.likePost = async function(id) {
+
+  const postRef = doc(db, "songfess", id);
+  const q = query(collection(db, "songfess"));
+  const snapshot = await getDocs(q);
+
+  const postData = snapshot.docs.find(d => d.id === id).data();
+  const currentLikes = postData.likes || 0;
+
+  await updateDoc(postRef, {
+    likes: currentLikes + 1
+  });
+
+  loadSongfess();
+};
+
+loadSongfess();
+
+</script>
+  waktu: serverTimestamp(),
+  likes: 0
+});
       getDocs,
       serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -86,7 +213,10 @@
     async function loadSongfess() {
       result.innerHTML = "";
 
-      const querySnapshot = await getDocs(collection(db, "songfess"));
+      import { query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const q = query(collection(db, "songfess"), orderBy("waktu", "desc"));
+const querySnapshot = await getDocs(q);
 
       querySnapshot.forEach((doc) => {
         const item = doc.data();
@@ -103,6 +233,7 @@
         }
 
         card.innerHTML = `
+        <button onclick="likePost('${doc.id}')">❤️ ${item.likes || 0}</button>
           <strong>From:</strong> ${item.sender || "Anonim"}<br>
           <strong>To:</strong> ${item.receiver}<br>
           <small>${waktuFormatted}</small><br><br>
@@ -146,6 +277,15 @@
       document.getElementById("message").value = "";
 
       loadSongfess();
+      import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+window.likePost = async function(id) {
+  const postRef = doc(db, "songfess", id);
+  await updateDoc(postRef, {
+    likes: (await getDocs(collection(db, "songfess"))).docs.find(d => d.id === id).data().likes + 1
+  });
+  loadSongfess();
+};
     };
 
     loadSongfess();
