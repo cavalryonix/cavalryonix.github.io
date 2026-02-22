@@ -3,64 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Songfess - Kirim Pesan Lewat Lagu</title>
+    <title>Songfess Aesthetic</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --primary: #ff4d6d;
-            --bg: #f8f9fa;
+            --dark-brown: #5D4037;
+            --medium-brown: #8D6E63;
+            --creme: #FDF5E6;
+            --soft-creme: #FFFBF2;
         }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: auto; }
-        h2 { text-align: center; color: var(--primary); }
-        
+        body { 
+            background-color: var(--creme); 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            color: var(--dark-brown);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container { width: 100%; max-width: 450px; }
+        h2 { text-align: center; color: var(--dark-brown); }
+
         /* Form Styling */
-        .form-group { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
-        button#submit-btn { width: 100%; background-color: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: 0.3s; }
-        button#submit-btn:hover { background-color: #ff758f; }
+        .form-box { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 15px; 
+            box-shadow: 0 4px 10px rgba(93, 64, 55, 0.1);
+            margin-bottom: 30px;
+            border: 1px solid #e0d5c1;
+        }
+        input, textarea { 
+            width: 100%; padding: 10px; margin: 8px 0; 
+            border: 1px solid #d7ccc8; border-radius: 8px; 
+            background: var(--soft-creme); color: var(--dark-brown);
+            box-sizing: border-box;
+        }
+        button#btn-kirim { 
+            width: 100%; background: var(--dark-brown); color: white; 
+            border: none; padding: 12px; border-radius: 8px; 
+            font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
 
         /* Card Styling */
-        .card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); }
-        .card strong { color: var(--primary); }
-        .card small { color: #888; display: block; margin-top: 5px; }
-        .card p { margin: 15px 0; line-height: 1.5; }
-        .like-btn { background: #fff1f3; border: 1px solid #ffccd5; color: var(--primary); padding: 5px 12px; border-radius: 20px; cursor: pointer; font-size: 14px; }
-        .like-btn:hover { background: #ffccd5; }
+        .card { 
+            background: white; border-radius: 15px; padding: 20px; 
+            margin-bottom: 20px; border: 1px solid #e0d5c1;
+            position: relative; overflow: hidden;
+        }
+        .card-content { padding: 5px; } /* Untuk target screenshot */
+        .card strong { color: var(--medium-brown); }
+        .card small { color: #a1887f; }
+        .card p { font-style: italic; margin: 15px 0; border-left: 3px solid #d7ccc8; padding-left: 10px; }
         
-        iframe { border-radius: 12px; margin-top: 10px; }
+        /* Buttons Area */
+        .action-btns { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .btn-small { 
+            padding: 6px 12px; border-radius: 20px; border: 1px solid #d7ccc8; 
+            background: white; cursor: pointer; font-size: 12px; transition: 0.2s;
+        }
+        .btn-small:hover { background: var(--soft-creme); }
+        .btn-del { color: #d32f2f; border-color: #ffcdd2; }
+        .btn-down { background: var(--medium-brown); color: white; border: none; }
+
+        iframe { border-radius: 10px; margin-top: 10px; background: #eee; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🎵 Songfess Online</h2>
+    <h2>☕ Cavalryonix's Songfess Room</h2>
 
-    <div class="form-group">
-        <input type="text" id="sender" placeholder="Nama Pengirim (Opsional)">
-        <input type="text" id="receiver" placeholder="Untuk Siapa? (Wajib)">
-        <input type="text" id="song" placeholder="Link Spotify Track (Wajib)">
-        <textarea id="message" rows="3" placeholder="Tulis pesan manis kamu... (Wajib)"></textarea>
-        <button id="submit-btn" onclick="addSongfess()">Kirim Pesan 💌</button>
+    <div class="form-box">
+        <input type="text" id="sender" placeholder="From (Anonim)">
+        <input type="text" id="receiver" placeholder="To">
+        <input type="text" id="song" placeholder="Spotify Track Link">
+        <textarea id="message" placeholder="Message"></textarea>
+        <button id="btn-kirim" onclick="addSongfess()">Kirim 💌</button>
     </div>
 
-    <div id="result">
-        <p style="text-align: center; color: #888;">Memuat pesan...</p>
-    </div>
+    <div id="result"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { 
-  getFirestore, 
-  collection, 
-  addDoc, 
-  getDocs,
-  serverTimestamp,
-  query,
-  orderBy,
-  doc,
-  updateDoc,
-  getDoc
+  getFirestore, collection, addDoc, getDocs, serverTimestamp, 
+  query, orderBy, doc, updateDoc, getDoc, deleteDoc 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -72,91 +101,50 @@ const firebaseConfig = {
   appId: "1:496785985793:web:56eff97ed61a5c91664b00"
 };
 
-// Inisialisasi Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// FUNGSI UNTUK MEMBACA DATA (READ)
+// 1. LOAD DATA
 async function loadSongfess() {
-  const resultDiv = document.getElementById("result");
-  if (!resultDiv) return;
+  const result = document.getElementById("result");
+  if (!result) return;
+  result.innerHTML = "<p style='text-align:center'>Brewing your messages... ☕</p>";
 
   try {
     const q = query(collection(db, "songfess"), orderBy("waktu", "desc"));
     const snapshot = await getDocs(q);
-    
-    resultDiv.innerHTML = ""; // Bersihkan loading
-
-    if (snapshot.empty) {
-        resultDiv.innerHTML = "<p style='text-align:center'>Belum ada pesan masuk.</p>";
-        return;
-    }
+    result.innerHTML = "";
 
     snapshot.forEach((documentData) => {
       const item = documentData.data();
+      const id = documentData.id;
       const card = document.createElement("div");
       card.className = "card";
+      card.id = `card-${id}`;
 
-      // Ubah link Spotify biasa ke Link Embed
-      let songUrl = item.song || "";
-      let embedLink = songUrl.replace("track/", "embed/track/").split("?")[0];
-
-      let waktuFormatted = "Baru saja";
-      if (item.waktu) {
-        waktuFormatted = item.waktu.toDate().toLocaleString("id-ID");
-      }
+      const embedLink = (item.song || "").replace("track/", "embed/track/").split("?")[0];
+      const waktu = item.waktu ? item.waktu.toDate().toLocaleString("id-ID") : "";
 
       card.innerHTML = `
-        <strong>From:</strong> ${item.sender || "Anonim"}<br>
-        <strong>To:</strong> ${item.receiver}<br>
-        <small>🕒 ${waktuFormatted}</small>
-
-        <iframe src="${embedLink}" 
-          width="100%" height="80" 
-          frameborder="0"
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture">
-        </iframe>
-
-        <p>${item.message}</p>
-
-        <button class="like-btn" data-id="${documentData.id}">
-          ❤️ ${item.likes || 0}
-        </button>
+        <div class="card-content" id="content-${id}">
+            <strong>From:</strong> ${item.sender || "Anonim"}<br>
+            <strong>To:</strong> ${item.receiver}<br>
+            <small>${waktu}</small><br>
+            <iframe src="${embedLink}" width="100%" height="80" frameborder="0" allow="encrypted-media"></iframe>
+            <p>"${item.message}"</p>
+        </div>
+        <div class="action-btns">
+            <button class="btn-small" onclick="window.likePost('${id}')">❤️ ${item.likes || 0}</button>
+            <button class="btn-small btn-down" onclick="window.downloadCard('${id}')">📸 Simpan ke IG</button>
+            <button class="btn-small btn-del" onclick="window.deletePost('${id}')">🗑️ Hapus</button>
+        </div>
       `;
-      resultDiv.appendChild(card);
+      result.appendChild(card);
     });
-
-    // Pasang Event Listener untuk tombol Like
-    document.querySelectorAll(".like-btn").forEach(btn => {
-      btn.addEventListener("click", async (e) => {
-        const id = e.target.getAttribute("data-id");
-        await likePost(id);
-      });
-    });
-
-  } catch (e) {
-    console.error("Error load data:", e);
-    resultDiv.innerHTML = "Gagal memuat data. Periksa koneksimu.";
-  }
+  } catch (err) { console.error(err); }
 }
 
-// FUNGSI UNTUK LIKE
-async function likePost(id) {
-  try {
-    const postRef = doc(db, "songfess", id);
-    const snap = await getDoc(postRef);
-    if (snap.exists()) {
-      const currentLikes = snap.data().likes || 0;
-      await updateDoc(postRef, { likes: currentLikes + 1 });
-      loadSongfess(); // Refresh data setelah like
-    }
-  } catch (e) {
-    console.error("Gagal like:", e);
-  }
-}
-
-// FUNGSI UNTUK MENAMBAH DATA (CREATE)
-// Kita tempelkan ke window agar bisa dipanggil dari HTML (onclick)
+// 2. TAMBAH DATA
 window.addSongfess = async function() {
   const sender = document.getElementById("sender").value;
   const receiver = document.getElementById("receiver").value;
@@ -164,46 +152,60 @@ window.addSongfess = async function() {
   const message = document.getElementById("message").value;
 
   if(!receiver || !song || !message) {
-    alert("Mohon isi field Penerima, Lagu, dan Pesan yaa! 😠");
+    alert("Isi dulu yang lengkap yaa 😠");
     return;
   }
 
-  const btn = document.getElementById("submit-btn");
-  btn.innerText = "Mengirim...";
-  btn.disabled = true;
+  await addDoc(collection(db, "songfess"), {
+    sender, receiver, song, message,
+    waktu: serverTimestamp(),
+    likes: 0
+  });
 
-  try {
-    await addDoc(collection(db, "songfess"), {
-      sender: sender || "Anonim",
-      receiver: receiver,
-      song: song,
-      message: message,
-      waktu: serverTimestamp(),
-      likes: 0
-    });
+  alert("Berhasil dikirim 💌");
+  location.reload(); // Refresh simpel
+};
 
-    alert("Pesan Berhasil Dikirim! 💌");
-    
-    // Reset Form
-    document.getElementById("sender").value = "";
-    document.getElementById("receiver").value = "";
-    document.getElementById("song").value = "";
-    document.getElementById("message").value = "";
-
-    loadSongfess(); // Refresh data
-  } catch (e) {
-    console.error("Gagal mengirim:", e);
-    alert("Waduh, gagal kirim pesan. Coba lagi!");
-  } finally {
-    btn.innerText = "Kirim Pesan 💌";
-    btn.disabled = false;
+// 3. LIKE POST
+window.likePost = async function(id) {
+  const postRef = doc(db, "songfess", id);
+  const snap = await getDoc(postRef);
+  if (snap.exists()) {
+    await updateDoc(postRef, { likes: (snap.data().likes || 0) + 1 });
+    loadSongfess();
   }
 };
 
-// Jalankan saat pertama kali dibuka
-document.addEventListener("DOMContentLoaded", () => {
-  loadSongfess();
-});
+// 4. DELETE POST (FITUR ADMIN)
+window.deletePost = async function(id) {
+  const pass = prompt("Masukkan Password Admin untuk menghapus:");
+  if (pass === "admin123") { // GANTI PASSWORD DI SINI
+    if(confirm("Yakin mau hapus pesan ini?")) {
+        await deleteDoc(doc(db, "songfess", id));
+        alert("Terhapus!");
+        loadSongfess();
+    }
+  } else {
+    alert("Password salah! Kamu bukan admin ya? 🤨");
+  }
+};
+
+// 5. DOWNLOAD PNG (FITUR REPOST IG)
+window.downloadCard = function(id) {
+  const target = document.getElementById(`content-${id}`);
+  // Sembunyikan iframe sebentar karena html2canvas sulit menangkap iframe musik
+  html2canvas(target, {
+    backgroundColor: "#FDF5E6",
+    scale: 2 // Biar jernih
+  }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `songfess-${id}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  });
+};
+
+loadSongfess();
 </script>
 
 </body>
